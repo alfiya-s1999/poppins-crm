@@ -271,7 +271,7 @@ export default function App() {
       supabase.from('expenses').select('*').order('date',{ascending:false}),
       supabase.from('products').select('*').order('name'),
       supabase.from('clients').select('*').order('name'),
-      supabase.from('inventory').select('*').order('name').catch(()=>({data:[]})),
+      supabase.from('inventory').select('*').order('name'),
     ])
     setOrders(o.data||[]); setExpenses(e.data||[]); setProducts(p.data||[]); setClients(c.data||[]); setInventory(inv.data||[])
     setLoading(false)
