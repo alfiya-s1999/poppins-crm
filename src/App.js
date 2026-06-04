@@ -436,6 +436,23 @@ export default function App() {
   const prev7 = orders.filter(o=>{ const d=new Date(o.date); return d>=new Date(today-14*86400000) && d<new Date(today-7*86400000) }).reduce((s,o)=>s+Number(o.amount),0)
   const weekChange = prev7>0 ? Math.round((last7-prev7)/prev7*100) : 0
 
+  const printBulkInvoices = () => {
+    const selectedOrders = orders.filter(o => bulkSelect.includes(o.id))
+    if (selectedOrders.length === 0) return
+    const win = window.open('', '_blank')
+    const invoiceHTML = selectedOrders.map(order => {
+      const items = parseOrderItems(order.items, order.client_type, products)
+      const total = items.reduce((s,i)=>s+(i.amount||0),0) || Number(order.amount) || 0
+      const itemRows = items.length > 0 ? items.map(item =>
+        `<tr><td style="padding:8px;border-bottom:1px solid #E8D8B4">${item.name}</td><td style="padding:8px;text-align:center;border-bottom:1px solid #E8D8B4">${item.qty}</td><td style="padding:8px;text-align:right;border-bottom:1px solid #E8D8B4">${item.rate?'₹'+item.rate:'—'}</td><td style="padding:8px;text-align:right;border-bottom:1px solid #E8D8B4">${item.amount?'₹'+item.amount.toLocaleString():'—'}</td></tr>`
+      ).join('') : `<tr><td colspan="4" style="padding:10px;color:#8C7A5E">${order.items||''}</td></tr>`
+      return `<div style="page-break-after:always;padding:32px;font-family:-apple-system,sans-serif"><div style="text-align:center;margin-bottom:24px;border-bottom:2px solid #C4924A;padding-bottom:16px"><div style="font-size:22px;font-weight:700;color:#6B4C2A;letter-spacing:0.2em">POPPINS</div><div style="font-size:11px;color:#8C7A5E">Fresh baked. Delivered with love.</div></div><div style="display:flex;justify-content:space-between;margin-bottom:20px"><div><div style="font-size:11px;color:#8C7A5E">FROM</div><div style="font-weight:600">Poppins</div><div style="font-size:12px;color:#8C7A5E">PAN: JEZPS2147G</div></div><div style="text-align:right"><div style="font-size:11px;color:#8C7A5E">INVOICE</div><div style="font-weight:600">${order.invoice_no}</div><div style="font-size:12px;color:#8C7A5E">${order.date}</div></div></div><div style="margin-bottom:20px"><div style="font-size:11px;color:#8C7A5E">BILL TO</div><div style="font-weight:600">${order.client}</div></div><table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px"><thead><tr style="background:#F5E6C8"><th style="text-align:left;padding:8px;font-size:11px;color:#8C7A5E">Item</th><th style="text-align:center;padding:8px;font-size:11px;color:#8C7A5E">Qty</th><th style="text-align:right;padding:8px;font-size:11px;color:#8C7A5E">Rate</th><th style="text-align:right;padding:8px;font-size:11px;color:#8C7A5E">Amount</th></tr></thead><tbody>${itemRows}</tbody><tfoot><tr style="border-top:2px solid #C4924A"><td colspan="3" style="padding:10px;font-weight:600;text-align:right">Total</td><td style="padding:10px;font-weight:700;text-align:right;font-size:15px">₹${total.toLocaleString()}</td></tr></tfoot></table><div style="background:#F5E6C8;border-radius:10px;padding:12px;margin-bottom:20px"><div style="font-size:11px;font-weight:600;color:#8C7A5E;margin-bottom:8px">BANK DETAILS</div><div style="font-size:12px;line-height:1.7">Bank: State Bank of India<br>Branch: Nahan<br>A/C: 37258711949<br>IFSC: SBIN0000686</div></div><div style="text-align:center;font-size:12px;color:#8C7A5E">Thank you for your business. Baked with love in Nahan.</div></div>`
+    }).join('')
+    win.document.write(`<!DOCTYPE html><html><head><title>Poppins Invoices</title><style>@media print{@page{margin:8mm}body{margin:0}}</style></head><body>${invoiceHTML}</body></html>`)
+    win.document.close()
+    setTimeout(() => win.print(), 500)
+  }
+
   const productNames = products.map(p=>p.name)
   const navItems = [
     {id:'home',label:'Home',icon:'⌂'},
